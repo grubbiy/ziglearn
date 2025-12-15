@@ -1,0 +1,1197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Stack vs Heap – Interactive Learning Module</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        :root {
+            --bg: #020617;
+            --surface: #020617;
+            --surface-elevated: #0b1120;
+            --surface-muted: #111827;
+            --text: #e5e7eb;
+            --text-muted: #9ca3af;
+            --accent: #f97316;
+            --accent-soft: #831843;
+            --danger: #f97373;
+            --success: #4ade80;
+            --code-bg: #020617;
+            --code-text: #e5e7eb;
+            --border: #1f2937;
+            --radius-lg: 16px;
+            --shadow-soft: 0 22px 45px rgba(0, 0, 0, 0.7);
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            background: radial-gradient(circle at top, #0f172a 0, #020617 55%);
+            color: var(--text);
+            line-height: 1.5;
+        }
+
+        .shell {
+            max-width: 1050px;
+            margin: 28px auto 48px;
+            padding: 0 16px 32px;
+        }
+
+        header.hero {
+            background: radial-gradient(circle at top left, #0f172a 0, #020617 60%);
+            border-radius: 24px;
+            padding: 22px 22px 18px;
+            color: #f9fafb;
+            box-shadow: var(--shadow-soft);
+            position: static; /* no sticky */
+        }
+
+        .hero-top {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            gap: 16px;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 4px 10px;
+            border-radius: 999px;
+            background: rgba(16, 185, 129, 0.18);
+            color: #a7f3d0;
+            font-size: 12px;
+            letter-spacing: 0.03em;
+            text-transform: uppercase;
+        }
+
+        .badge-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 999px;
+            background: #22c55e;
+            box-shadow: 0 0 10px #22c55e;
+        }
+
+        .hero-title {
+            font-size: clamp(26px, 4vw, 34px);
+            font-weight: 700;
+            letter-spacing: -0.03em;
+        }
+
+        .hero-sub {
+            font-size: 14px;
+            color: #e5e7eb;
+            max-width: 550px;
+        }
+
+        .hero-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 6px;
+        }
+
+        .hero-actions button {
+            border-radius: 999px;
+            border: 0;
+            cursor: pointer;
+            padding: 8px 14px;
+            font-size: 13px;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: rgba(15, 23, 42, 0.9);
+            color: #e5e7eb;
+        }
+
+        .hero-actions button.primary {
+            background: var(--accent);
+            color: #111827;
+            font-weight: 600;
+        }
+
+        .hero-actions button span.icon {
+            font-size: 16px;
+        }
+
+        .layout {
+            margin-top: 20px;
+            display: grid;
+            grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
+            gap: 18px;
+        }
+
+        @media (max-width: 900px) {
+            .layout {
+                grid-template-columns: minmax(0, 1fr);
+            }
+        }
+
+        .card {
+            background: var(--surface-elevated);
+            border-radius: var(--radius-lg);
+            padding: 16px 16px 14px;
+            box-shadow: 0 18px 38px rgba(0, 0, 0, 0.65);
+            border: 1px solid var(--border);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            gap: 10px;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .card-title {
+            font-size: 18px;
+            font-weight: 600;
+            letter-spacing: -0.01em;
+        }
+
+        .card-sub {
+            font-size: 13px;
+            color: var(--text-muted);
+        }
+
+        .tabs {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-bottom: 10px;
+        }
+
+        .tab-btn {
+            border-radius: 999px;
+            border: 1px solid var(--border);
+            padding: 4px 10px;
+            font-size: 12px;
+            background: #020617;
+            cursor: pointer;
+            color: var(--text-muted);
+        }
+
+        .tab-btn.active {
+            background: #f97316;
+            color: #111827;
+            border-color: #fed7aa;
+            font-weight: 600;
+        }
+
+        .pill {
+            border-radius: 999px;
+            padding: 2px 9px;
+            font-size: 11px;
+            border: 1px solid #4b5563;
+            color: #e5e7eb;
+        }
+
+        .pill.stack {
+            border-color: #fb923c;
+            color: #fed7aa;
+        }
+
+        .pill.heap {
+            border-color: #38bdf8;
+            color: #e0f2fe;
+        }
+
+        .pill.quiz {
+            border-color: #4ade80;
+            color: #bbf7d0;
+        }
+
+        .grid-2 {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+            gap: 14px;
+        }
+
+        @media (max-width: 700px) {
+            .grid-2 {
+                grid-template-columns: minmax(0, 1fr);
+            }
+        }
+
+        .section-label {
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: var(--text-muted);
+            margin-bottom: 8px;
+        }
+
+        .section-heading {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .section-text {
+            font-size: 14px;
+            color: var(--text-muted);
+            margin-bottom: 6px;
+        }
+
+        ul.clean {
+            padding-left: 18px;
+            margin: 0 0 6px;
+            font-size: 14px;
+            color: var(--text-muted);
+        }
+
+        ul.clean li {
+            margin-bottom: 2px;
+        }
+
+        .highlight-box {
+            background: rgba(15, 23, 42, 0.88);
+            border-radius: 12px;
+            padding: 10px 11px;
+            border: 1px solid #374151;
+            font-size: 13px;
+            color: #e5e7eb;
+        }
+
+        .highlight-box strong {
+            color: #f9fafb;
+        }
+
+        pre.code-block {
+            background: var(--code-bg);
+            color: var(--code-text);
+            border-radius: 10px;
+            padding: 10px 12px;
+            font-size: 13px;
+            overflow-x: auto;
+            font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+            border: 1px solid #1f2937;
+        }
+
+        pre.code-block code {
+            white-space: pre;
+        }
+
+        .code-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 4px;
+        }
+
+        .code-header span {
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+
+        .chip-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+
+        .chip {
+            font-size: 11px;
+            padding: 2px 8px;
+            border-radius: 999px;
+            border: 1px solid #4b5563;
+            color: #e5e7eb;
+            background: #020617;
+        }
+
+        .vis-panel {
+            background: #020617;
+            border-radius: 12px;
+            padding: 10px 11px;
+            border: 1px dashed #4b5563;
+            font-size: 13px;
+        }
+
+        .vis-label {
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            color: var(--text-muted);
+            margin-bottom: 4px;
+        }
+
+        .stack-visual {
+            border-radius: 10px;
+            background: linear-gradient(180deg, #f97316, #7f1d1d);
+            padding: 10px;
+            min-height: 120px;
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+            border: 1px solid #7c2d12;
+            position: relative;
+        }
+
+        .stack-visual-inner {
+            display: flex;
+            flex-direction: column-reverse;
+            align-items: stretch;
+            gap: 4px;
+            width: 110px;
+        }
+
+        .stack-item {
+            border-radius: 8px;
+            padding: 4px 6px;
+            text-align: center;
+            font-size: 12px;
+            font-weight: 600;
+            background: #fed7aa;
+            color: #7c2d12;
+            box-shadow: 0 3px 0 #c2410c;
+        }
+
+        .stack-empty {
+            font-size: 12px;
+            color: #fee2e2;
+            text-align: center;
+            width: 100%;
+        }
+
+        .heap-visual {
+            border-radius: 10px;
+            background: linear-gradient(180deg, #0ea5e9, #1e293b);
+            padding: 10px;
+            min-height: 120px;
+            border: 1px solid #0ea5e9;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .heap-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+
+        .heap-block {
+            border-radius: 8px;
+            padding: 4px 7px;
+            font-size: 11px;
+            background: #e0f2fe;
+            color: #0f172a;
+            box-shadow: 0 3px 0 #0369a1;
+        }
+
+        .heap-block.leaked {
+            background: #7c2d12;
+            color: #fee2e2;
+            box-shadow: 0 3px 0 #431407;
+        }
+
+        .controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-top: 8px;
+        }
+
+        .controls input {
+            padding: 4px 7px;
+            font-size: 13px;
+            border-radius: 999px;
+            border: 1px solid #4b5563;
+            min-width: 80px;
+            background: #020617;
+            color: var(--text);
+        }
+
+        .controls input::placeholder {
+            color: #6b7280;
+        }
+
+        .btn {
+            border-radius: 999px;
+            border: 0;
+            padding: 5px 10px;
+            font-size: 12px;
+            cursor: pointer;
+            background: var(--accent);
+            color: #111827;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .btn.small {
+            padding: 3px 8px;
+            font-size: 11px;
+        }
+
+        .btn.secondary {
+            background: #111827;
+            color: #e5e7eb;
+        }
+
+        .btn.danger {
+            background: #b91c1c;
+            color: #fee2e2;
+        }
+
+        .status {
+            margin-top: 6px;
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+
+        .status.good {
+            color: var(--success);
+        }
+
+        .status.bad {
+            color: var(--danger);
+        }
+
+        .quiz-item {
+            border-radius: 10px;
+            border: 1px solid var(--border);
+            padding: 10px 12px;
+            background: #020617;
+            margin-bottom: 8px;
+        }
+
+        .quiz-question {
+            font-size: 13px;
+            margin-bottom: 6px;
+            font-weight: 500;
+        }
+
+        .quiz-options {
+            display: flex;
+            flex-direction: column;
+            gap: 3px;
+            font-size: 13px;
+        }
+
+        .quiz-options label {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            cursor: pointer;
+        }
+
+        .quiz-options input {
+            margin: 0;
+        }
+
+        .quiz-footer {
+            display: flex;
+            justify-content: space-between;
+            gap: 10px;
+            align-items: center;
+            margin-top: 8px;
+            font-size: 12px;
+        }
+
+        .quiz-result {
+            font-weight: 600;
+        }
+
+        .quiz-result.good {
+            color: var(--success);
+        }
+
+        .quiz-result.bad {
+            color: var(--danger);
+        }
+
+        .mini-note {
+            font-size: 11px;
+            color: var(--text-muted);
+            margin-top: 6px;
+        }
+    </style>
+</head>
+<body>
+<div class="shell">
+    <header class="hero">
+        <div class="hero-top">
+            <div>
+                <div class="badge">
+                    <span class="badge-dot"></span>
+                    <span>Live memory module</span>
+                </div>
+                <h1 class="hero-title">Stack vs Heap</h1>
+                <p class="hero-sub">
+                    A small “learning app” about how programs use memory. No heavy theory – just visuals,
+                    simple code, and a quick quiz.
+                </p>
+            </div>
+            <div>
+                <div class="chip-row">
+                    <div class="chip">Beginner-friendly</div>
+                    <div class="chip">Stack</div>
+                    <div class="chip">Heap</div>
+                    <div class="chip">Mini quiz</div>
+                </div>
+            </div>
+        </div>
+        <div class="hero-actions">
+            <button class="primary" data-scroll-target="section-visual">
+                <span class="icon">▶</span>
+                Start with the visual demo
+            </button>
+            <button data-scroll-target="section-code">
+                <span class="icon">💻</span>
+                Jump to code examples
+            </button>
+            <button data-scroll-target="section-quiz">
+                <span class="icon">🧠</span>
+                Test yourself
+            </button>
+        </div>
+    </header>
+
+    <main class="layout">
+        <!-- LEFT COLUMN: CONCEPT + CODE + BUGS + DECISION -->
+        <section>
+            <article class="card" id="section-concept">
+                <div class="card-header">
+                    <div>
+                        <div class="card-title">Core idea</div>
+                        <div class="card-sub">What is the stack? What is the heap? Why do you care?</div>
+                    </div>
+                    <span class="pill">Concept</span>
+                </div>
+                <div class="section-label">Memory in a program</div>
+                <p class="section-text">
+                    When a program runs, it gets a piece of RAM. Inside that RAM, there are different areas.
+                    Two important ones:
+                </p>
+                <ul class="clean">
+                    <li><strong>Stack</strong> – short-lived data while functions run.</li>
+                    <li><strong>Heap</strong> – flexible storage for long-lived or bigger data.</li>
+                </ul>
+
+                <div class="grid-2" style="margin-top:8px;">
+                    <div>
+                        <div class="section-heading">The stack</div>
+                        <p class="section-text">
+                            Think of a stack of plates:
+                        </p>
+                        <ul class="clean">
+                            <li>You put new plates on top.</li>
+                            <li>You always remove from the top.</li>
+                            <li>Last plate in = first plate out (LIFO).</li>
+                        </ul>
+                        <p class="section-text">
+                            The program uses the stack for things like:
+                        </p>
+                        <ul class="clean">
+                            <li>Function inputs (parameters).</li>
+                            <li>Local variables.</li>
+                            <li>Return address (where to come back).</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <div class="section-heading">The heap</div>
+                        <p class="section-text">
+                            The heap is a big pool of memory that the program can grab from when it needs more space.
+                        </p>
+                        <ul class="clean">
+                            <li>You <strong>ask</strong> for memory (allocate).</li>
+                            <li>You get back an address (a pointer).</li>
+                            <li>You must <strong>remember</strong> to give it back (free).</li>
+                        </ul>
+                        <p class="section-text">
+                            Good for:
+                        </p>
+                        <ul class="clean">
+                            <li>Data that lives longer than one function.</li>
+                            <li>Big or flexible size data (lists, strings, etc.).</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="highlight-box" style="margin-top:10px;">
+                    <strong>Rule of thumb:</strong> if the data is small and dies with the function → stack.
+                    If it is big or must live longer → heap.
+                </div>
+            </article>
+
+            <article class="card" id="section-code" style="margin-top:18px;">
+                <div class="card-header">
+                    <div>
+                        <div class="card-title">Code examples</div>
+                        <div class="card-sub">How stack and heap look in simple C-style code.</div>
+                    </div>
+                    <span class="pill">Code</span>
+                </div>
+
+                <div class="tabs" id="code-tabs">
+                    <button class="tab-btn active" data-code-tab="stack-locals">Stack locals</button>
+                    <button class="tab-btn" data-code-tab="stack-overflow">Stack overflow</button>
+                    <button class="tab-btn" data-code-tab="heap-basic">Heap basic</button>
+                    <button class="tab-btn" data-code-tab="heap-bugs">Heap bugs</button>
+                </div>
+
+                <!-- STACK LOCALS -->
+                <div class="code-view" data-code-panel="stack-locals">
+                    <div class="section-label">Stack example</div>
+                    <p class="section-text">
+                        Here everything lives on the stack. When the function ends, its local variables are removed
+                        automatically.
+                    </p>
+                    <div class="code-header">
+                        <span>Local variables on the stack</span>
+                        <span class="pill stack">Stack</span>
+                    </div>
+                    <pre class="code-block"><code>&nbsp;&nbsp;&nbsp;&nbsp;int add(int a, int b) {
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;int sum = a + b;   // sum lives on the stack
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;return sum;        // a, b, sum are removed after return
+&nbsp;&nbsp;&nbsp;&nbsp;}
+
+&nbsp;&nbsp;&nbsp;&nbsp;int main(void) {
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;int result = add(2, 3); // result lives on the stack in main
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;return 0;
+&nbsp;&nbsp;&nbsp;&nbsp;}</code></pre>
+                </div>
+
+                <!-- STACK OVERFLOW -->
+                <div class="code-view" data-code-panel="stack-overflow" style="display:none;">
+                    <div class="section-label">Stack overflow idea</div>
+                    <p class="section-text">
+                        If you keep adding more and more stack frames (for example with recursion), you can run out of stack.
+                        The program then crashes with a stack overflow.
+                    </p>
+                    <div class="code-header">
+                        <span>Too deep recursion</span>
+                        <span class="pill stack">Stack</span>
+                    </div>
+                    <pre class="code-block"><code>&nbsp;&nbsp;&nbsp;&nbsp;void recurse(int n) {
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;int numbers[1000];   // large array on the stack
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;numbers[0] = n;
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;recurse(n + 1);      // calls itself again and again
+&nbsp;&nbsp;&nbsp;&nbsp;}
+
+&nbsp;&nbsp;&nbsp;&nbsp;int main(void) {
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;recurse(0);          // eventually: stack overflow (crash)
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;return 0;
+&nbsp;&nbsp;&nbsp;&nbsp;}</code></pre>
+                    <div class="highlight-box" style="margin-top:8px;">
+                        <strong>Takeaway:</strong> large local arrays + deep recursion = easy way to kill the stack.
+                    </div>
+                </div>
+
+                <!-- HEAP BASIC -->
+                <div class="code-view" data-code-panel="heap-basic" style="display:none;">
+                    <div class="section-label">Heap example</div>
+                    <p class="section-text">
+                        Here we ask for memory on the heap and later give it back. The <code>arr</code> pointer itself
+                        is on the stack, but it points into the heap.
+                    </p>
+                    <div class="code-header">
+                        <span>Basic heap allocation</span>
+                        <span class="pill heap">Heap</span>
+                    </div>
+                    <pre class="code-block"><code>&nbsp;&nbsp;&nbsp;&nbsp;#include &lt;stdlib.h&gt;
+
+&nbsp;&nbsp;&nbsp;&nbsp;void make_array(int count) {
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;int *arr = malloc(count * sizeof(int)); // memory from heap
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if (arr == NULL) {
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;// allocation failed
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;return;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;// use arr here ...
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;arr[0] = 42;
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;free(arr);   // give memory back to the heap
+&nbsp;&nbsp;&nbsp;&nbsp;}</code></pre>
+                    <div class="highlight-box" style="margin-top:8px;">
+                        <strong>Takeaway:</strong> heap memory = manual. You ask for it, you free it. Forgetting
+                        <code>free</code> is a leak.
+                    </div>
+                </div>
+
+                <!-- HEAP BUGS -->
+                <div class="code-view" data-code-panel="heap-bugs" style="display:none;">
+                    <div class="section-label">Heap bugs</div>
+                    <p class="section-text">
+                        Two classic mistakes when working with heap memory:
+                    </p>
+
+                    <div class="section-heading">1. Memory leak</div>
+                    <p class="section-text">
+                        You take memory from the heap, but never give it back.
+                    </p>
+                    <pre class="code-block"><code>&nbsp;&nbsp;&nbsp;&nbsp;void leak_example(void) {
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;int *arr = malloc(100 * sizeof(int));
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if (arr == NULL) return;
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;arr[0] = 10;
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;// BUG: forgot free(arr);
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;// memory is still reserved on the heap
+&nbsp;&nbsp;&nbsp;&nbsp;}</code></pre>
+
+                    <div class="section-heading" style="margin-top:8px;">2. Use-after-free</div>
+                    <p class="section-text">
+                        You keep using memory after you told the system you are done with it.
+                    </p>
+                    <pre class="code-block"><code>&nbsp;&nbsp;&nbsp;&nbsp;void use_after_free(void) {
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;int *x = malloc(sizeof(int));
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*x = 5;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;free(x);          // memory is returned to the heap
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*x = 7;           // BUG: x points to memory we no longer own
+&nbsp;&nbsp;&nbsp;&nbsp;}</code></pre>
+
+                    <div class="highlight-box" style="margin-top:8px;">
+                        <strong>Takeaway:</strong> on the heap you can hurt yourself in slow and invisible ways
+                        (leaks, corrupt data). On the stack it usually crashes fast.
+                    </div>
+                </div>
+
+                <p class="mini-note">
+                    Same ideas apply in Zig or any low-level language. The important part is where the data lives,
+                    not the exact syntax.
+                </p>
+            </article>
+
+            <article class="card" id="section-bugs" style="margin-top:18px;">
+                <div class="card-header">
+                    <div>
+                        <div class="card-title">Typical memory bugs</div>
+                        <div class="card-sub">The stuff that makes programs crash or slowly die.</div>
+                    </div>
+                    <span class="pill">Bugs</span>
+                </div>
+
+                <div class="grid-2">
+                    <div>
+                        <div class="section-heading">Stack bugs</div>
+                        <ul class="clean">
+                            <li><strong>Stack overflow</strong> – you use more stack than is available.</li>
+                            <li>Often caused by deep recursion.</li>
+                            <li>Also caused by huge local arrays.</li>
+                            <li>Usually ends in a fast crash or kernel panic.</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <div class="section-heading">Heap bugs</div>
+                        <ul class="clean">
+                            <li><strong>Memory leak</strong> – you never free what you allocated.</li>
+                            <li><strong>Use-after-free</strong> – using memory after freeing it.</li>
+                            <li><strong>Double free</strong> – freeing the same pointer twice.</li>
+                            <li>These may not crash immediately, which makes them hard to find.</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="highlight-box" style="margin-top:8px;">
+                    <strong>Idea:</strong> stack bugs are often loud and quick. Heap bugs are often quiet and slow.
+                    Both are dangerous in low-level code.
+                </div>
+            </article>
+
+            <article class="card" id="section-choose" style="margin-top:18px;">
+                <div class="card-header">
+                    <div>
+                        <div class="card-title">How to choose – stack or heap?</div>
+                        <div class="card-sub">A tiny decision checklist.</div>
+                    </div>
+                    <span class="pill">Decision</span>
+                </div>
+
+                <div class="section-label">Ask these questions</div>
+                <ul class="clean">
+                    <li><strong>How long does the data need to live?</strong></li>
+                    <li><strong>How big can it get?</strong></li>
+                    <li><strong>Do I know the size at compile time?</strong></li>
+                </ul>
+
+                <div class="grid-2" style="margin-top:8px;">
+                    <div>
+                        <div class="section-heading">Choose stack if…</div>
+                        <ul class="clean">
+                            <li>The data lives only inside one function.</li>
+                            <li>The size is small and fixed.</li>
+                            <li>You want speed and simplicity.</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <div class="section-heading">Choose heap if…</div>
+                        <ul class="clean">
+                            <li>The data must live after the function returns.</li>
+                            <li>The data can be large or variable size.</li>
+                            <li>You are building shared structures (lists, trees, etc.).</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="highlight-box" style="margin-top:8px;">
+                    <strong>Mental model:</strong> the stack is your short‑term scratchpad. The heap is your long‑term
+                    storage room. Both are in RAM, just used in different ways.
+                </div>
+            </article>
+        </section>
+
+        <!-- RIGHT COLUMN: VISUAL + QUIZ -->
+        <section>
+            <article class="card" id="section-visual">
+                <div class="card-header">
+                    <div>
+                        <div class="card-title">Visual demo</div>
+                        <div class="card-sub">Play with a fake stack and heap to see how they behave.</div>
+                    </div>
+                    <span class="pill">Hands-on</span>
+                </div>
+
+                <div class="section-label">Stack demo</div>
+                <div class="vis-panel">
+                    <div class="vis-label">Stack of values (like plates)</div>
+                    <div class="stack-visual">
+                        <div class="stack-visual-inner" id="stack-visual-list">
+                            <div class="stack-empty" id="stack-empty">Stack is empty</div>
+                        </div>
+                    </div>
+                    <div class="controls">
+                        <input type="text" id="stack-input" placeholder="value (e.g. 42)">
+                        <button class="btn small" id="stack-push-btn">Push (add)</button>
+                        <button class="btn small secondary" id="stack-pop-btn">Pop (remove)</button>
+                        <button class="btn small" id="stack-reset-btn">Reset</button>
+                    </div>
+                    <div class="status" id="stack-status">Last in = first out.</div>
+                </div>
+
+                <div class="section-label" style="margin-top:10px;">Heap demo</div>
+                <div class="vis-panel">
+                    <div class="vis-label">Heap blocks (manual allocation)</div>
+                    <div class="heap-visual">
+                        <div class="heap-row" id="heap-row"></div>
+                        <div class="section-text" style="font-size:12px;margin:0;">
+                            Each block is like a chunk from <code>malloc</code>. You must free it yourself.
+                        </div>
+                    </div>
+                    <div class="controls">
+                        <input type="text" id="heap-label-input" placeholder="label (e.g. arr)">
+                        <button class="btn small" id="heap-alloc-btn">Allocate</button>
+                        <input type="number" id="heap-id-input" placeholder="id" min="1" style="max-width:70px;">
+                        <button class="btn small secondary" id="heap-free-btn">Free</button>
+                        <button class="btn small danger" id="heap-leak-btn">Leak everything</button>
+                    </div>
+                    <div class="status" id="heap-status">Allocations: <span id="heap-count">0</span>. Freed: <span id="heap-freed">0</span>.</div>
+                </div>
+            </article>
+
+            <article class="card" id="section-quiz" style="margin-top:18px;">
+                <div class="card-header">
+                    <div>
+                        <div class="card-title">Mini quiz</div>
+                        <div class="card-sub">Check if the main ideas are stuck in your head.</div>
+                    </div>
+                    <span class="pill quiz">Quiz</span>
+                </div>
+
+                <div class="quiz-item" data-question="q1">
+                    <div class="quiz-question">
+                        1. Where do normal local variables in a function usually live?
+                    </div>
+                    <div class="quiz-options">
+                        <label>
+                            <input type="radio" name="q1" value="a">
+                            <span>On the heap.</span>
+                        </label>
+                        <label>
+                            <input type="radio" name="q1" value="b">
+                            <span>On the stack.</span>
+                        </label>
+                        <label>
+                            <input type="radio" name="q1" value="c">
+                            <span>Only in the CPU, never in RAM.</span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="quiz-item" data-question="q2">
+                    <div class="quiz-question">
+                        2. What is a stack overflow?
+                    </div>
+                    <div class="quiz-options">
+                        <label>
+                            <input type="radio" name="q2" value="a">
+                            <span>When the heap runs out of memory.</span>
+                        </label>
+                        <label>
+                            <input type="radio" name="q2" value="b">
+                            <span>When you use more stack space than is available.</span>
+                        </label>
+                        <label>
+                            <input type="radio" name="q2" value="c">
+                            <span>When the CPU queue of tasks is full.</span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="quiz-item" data-question="q3">
+                    <div class="quiz-question">
+                        3. What must you do after using memory you got from the heap with <code>malloc</code>?
+                    </div>
+                    <div class="quiz-options">
+                        <label>
+                            <input type="radio" name="q3" value="a">
+                            <span>Nothing, it is cleaned automatically when the function ends.</span>
+                        </label>
+                        <label>
+                            <input type="radio" name="q3" value="b">
+                            <span>Call <code>free</code> to return the memory.</span>
+                        </label>
+                        <label>
+                            <input type="radio" name="q3" value="c">
+                            <span>Call <code>malloc</code> again to reset it.</span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="quiz-item" data-question="q4">
+                    <div class="quiz-question">
+                        4. Which situation is most likely a memory leak?
+                    </div>
+                    <div class="quiz-options">
+                        <label>
+                            <input type="radio" name="q4" value="a">
+                            <span>You call <code>free</code> twice on the same pointer.</span>
+                        </label>
+                        <label>
+                            <input type="radio" name="q4" value="b">
+                            <span>You never call <code>free</code> for memory you allocated.</span>
+                        </label>
+                        <label>
+                            <input type="radio" name="q4" value="c">
+                            <span>You allocate memory on the stack with a local array.</span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="quiz-footer">
+                    <button class="btn small" id="quiz-check-btn">
+                        <span>Check answers</span>
+                    </button>
+                    <div class="quiz-result" id="quiz-result"></div>
+                </div>
+
+                <p class="mini-note">
+                    If you can explain in your own words when to pick stack vs heap, you already understand more than most beginners.
+                </p>
+            </article>
+        </section>
+    </main>
+</div>
+
+<script>
+    // Smooth scroll buttons in hero
+    document.querySelectorAll(".hero-actions button[data-scroll-target]").forEach(function (btn) {
+        btn.addEventListener("click", function () {
+            const targetId = btn.getAttribute("data-scroll-target");
+            const el = document.getElementById(targetId);
+            if (el) {
+                window.scrollTo({
+                    top: el.getBoundingClientRect().top + window.scrollY - 20,
+                    behavior: "smooth"
+                });
+            }
+        });
+    });
+
+    // Code tab switching
+    (function () {
+        const tabs = document.querySelectorAll(".tab-btn");
+        const panels = document.querySelectorAll(".code-view");
+
+        tabs.forEach(function (tab) {
+            tab.addEventListener("click", function () {
+                const id = tab.getAttribute("data-code-tab");
+
+                tabs.forEach(function (t) {
+                    t.classList.toggle("active", t === tab);
+                });
+
+                panels.forEach(function (p) {
+                    const panelId = p.getAttribute("data-code-panel");
+                    p.style.display = panelId === id ? "block" : "none";
+                });
+            });
+        });
+    })();
+
+    // Stack visual
+    (function () {
+        const stack = [];
+        const listEl = document.getElementById("stack-visual-list");
+        const statusEl = document.getElementById("stack-status");
+        const inputEl = document.getElementById("stack-input");
+        const pushBtn = document.getElementById("stack-push-btn");
+        const popBtn = document.getElementById("stack-pop-btn");
+        const resetBtn = document.getElementById("stack-reset-btn");
+
+        function renderStack() {
+            listEl.innerHTML = "";
+            if (stack.length === 0) {
+                const empty = document.createElement("div");
+                empty.className = "stack-empty";
+                empty.textContent = "Stack is empty";
+                listEl.appendChild(empty);
+                return;
+            }
+
+            for (let i = 0; i < stack.length; i++) {
+                const item = document.createElement("div");
+                item.className = "stack-item";
+                const label = stack[i] === "" ? "(empty)" : String(stack[i]);
+                item.textContent = label;
+                listEl.appendChild(item);
+            }
+        }
+
+        pushBtn.addEventListener("click", function () {
+            const value = inputEl.value.trim();
+            stack.push(value);
+            inputEl.value = "";
+            renderStack();
+            statusEl.textContent = "Pushed value on top of the stack (Last in = first out).";
+            statusEl.className = "status good";
+        });
+
+        popBtn.addEventListener("click", function () {
+            if (stack.length === 0) {
+                statusEl.textContent = "Cannot pop, the stack is empty.";
+                statusEl.className = "status bad";
+                return;
+            }
+            const value = stack.pop();
+            renderStack();
+            statusEl.textContent = "Popped value: \"" + (value === "" ? "(empty)" : value) + "\" from the top.";
+            statusEl.className = "status good";
+        });
+
+        resetBtn.addEventListener("click", function () {
+            stack.length = 0;
+            renderStack();
+            statusEl.textContent = "Stack reset. Last in = first out.";
+            statusEl.className = "status";
+        });
+
+        renderStack();
+    })();
+
+    // Heap visual
+    (function () {
+        let nextId = 1;
+        const heapBlocks = [];
+        const rowEl = document.getElementById("heap-row");
+        const labelInput = document.getElementById("heap-label-input");
+        const idInput = document.getElementById("heap-id-input");
+        const allocBtn = document.getElementById("heap-alloc-btn");
+        const freeBtn = document.getElementById("heap-free-btn");
+        const leakBtn = document.getElementById("heap-leak-btn");
+        const statusEl = document.getElementById("heap-status");
+        const countEl = document.getElementById("heap-count");
+        const freedEl = document.getElementById("heap-freed");
+
+        let freedCount = 0;
+
+        function renderHeap() {
+            rowEl.innerHTML = "";
+            heapBlocks.forEach(function (block) {
+                const div = document.createElement("div");
+                div.className = "heap-block" + (block.leaked ? " leaked" : "");
+                div.textContent = "#" + block.id + " " + block.label;
+                rowEl.appendChild(div);
+            });
+            countEl.textContent = heapBlocks.filter(function (b) { return !b.leaked; }).length.toString();
+            freedEl.textContent = freedCount.toString();
+        }
+
+        allocBtn.addEventListener("click", function () {
+            const label = labelInput.value.trim() || "block";
+            const block = { id: nextId++, label: label, leaked: false };
+            heapBlocks.push(block);
+            labelInput.value = "";
+            renderHeap();
+            statusEl.textContent = "Allocated heap block #" + block.id + " (“" + block.label + "”). Remember to free it.";
+            statusEl.className = "status good";
+        });
+
+        freeBtn.addEventListener("click", function () {
+            const idVal = parseInt(idInput.value, 10);
+            if (isNaN(idVal)) {
+                statusEl.textContent = "Type an id (the number on the block) to free.";
+                statusEl.className = "status bad";
+                return;
+            }
+            const idx = heapBlocks.findIndex(function (b) { return b.id === idVal && !b.leaked; });
+            if (idx === -1) {
+                statusEl.textContent = "No active heap block with id #" + idVal + " found.";
+                statusEl.className = "status bad";
+                return;
+            }
+            heapBlocks.splice(idx, 1);
+            freedCount++;
+            renderHeap();
+            statusEl.textContent = "Freed heap block #" + idVal + ". Good job.";
+            statusEl.className = "status good";
+        });
+
+        leakBtn.addEventListener("click", function () {
+            heapBlocks.forEach(function (b) { b.leaked = true; });
+            renderHeap();
+            statusEl.textContent = "You 'lost' all blocks (leaked). In a real program this slowly eats RAM.";
+            statusEl.className = "status bad";
+        });
+
+        renderHeap();
+    })();
+
+    // Quiz logic
+    (function () {
+        const answers = {
+            q1: "b",
+            q2: "b",
+            q3: "b",
+            q4: "b"
+        };
+
+        const btn = document.getElementById("quiz-check-btn");
+        const resultEl = document.getElementById("quiz-result");
+
+        btn.addEventListener("click", function () {
+            let correct = 0;
+            let total = 0;
+
+            Object.keys(answers).forEach(function (key) {
+                total++;
+                const selected = document.querySelector("input[name='" + key + "']:checked");
+                if (selected && selected.value === answers[key]) {
+                    correct++;
+                }
+            });
+
+            if (correct === total) {
+                resultEl.textContent = "Perfect: " + correct + " / " + total + ". Core ideas are there.";
+                resultEl.className = "quiz-result good";
+            } else {
+                resultEl.textContent = "Score: " + correct + " / " + total + ". Re-check the cards above.";
+                resultEl.className = "quiz-result bad";
+            }
+        });
+    })();
+</script>
+</body>
+</html>

@@ -1,0 +1,51 @@
+Steps of a computer startup.
+1. Computer enters BIOS/UEFI software and runs basic hardware checks.
+2. Looks for a bootloader, such as GRUB or Windows Boot manager on your machine.
+3. The bootloader loads the KERNEL into memory and hands control over to it.
+4. When the KERNEL starts running, it loads all KERNEL drivers (keyboard, mouse, network card, etc.)
+   and sets up the foundation for you operating system.
+5. You should now be in a login screen for your OS.
+
+Stacks and Heaps
+Stack is like a stack of plates in a cafeteria. 
+You can only add plates to the top, and you can only remove plates from the top. 
+The KERNEL creates a set size and location for the stacks your program creates.
+It's fast and organized, but limited in size. 
+When you create a variable inside a function in Zig, it usually goes on the stack. 
+When the function ends, those variables are automatically cleaned up (like removing the top plate). 
+This is why the stack is great for temporary data.
+
+The Heap is like the main warehouse floor where you can store things anywhere you want. 
+You have much more space, but you have to manually keep track of what you put where, 
+and you're responsible for cleaning it up when you're done. 
+If you forget to clean up (called a "memory leak"), that space stays occupied forever until your program ends. 
+This is where cybersecurity becomes important - if sensitive data stays in the heap after you're done with it, 
+another program might be able to read it!
+
+The KERNEL:
+Every OS comes with their own set of KERNEL drivers and KERNEL setups.
+For example, windows has its own KERNEL at its core, Linux has a linux KERNEL,
+and the same goes for macOS which has the XNU KERNEL.
+
+About String Literals and Program Memory - This Is Important!
+Okay, let me paint you a complete picture because this is fundamental to understanding how programs work. 
+When you compile a Zig program (or any program), the compiler creates an executable file. 
+That executable file contains several sections. Think of it like a book with different chapters:
+
+1. The first chapter contains your actual code (the instructions the CPU will run). 
+This is called the "text segment" or "code segment."
+2. The second chapter contains data that never changes, like string literals. 
+This is called the "data segment" or "read-only data."
+3. The third chapter contains space for variables that can change while your program runs. 
+This is called the "BSS segment."
+
+Compare:
+Value: ageHeap.* with {} → prints 17.
+Address: ageHeap with {*} → prints something like i32@1ad6a240000.
+So:
+&x = “make a pointer that points to x”.
+p.* = “go to where p points and read the value there”.
+Think:
+& = “take address”,
+.* = “follow address”.
+
